@@ -5,7 +5,7 @@
 #include <fcntl.h>    
 #include <sys/mman.h>
 #include <unistd.h>
-
+#include "mythread.h"
 
 #define BASE 0x3F000000
 #define GPIO_BASE 0x3F200000
@@ -53,19 +53,24 @@ volatile unsigned int * init_gpio(int fd);
 volatile unsigned int * init_pwm(int fd);
 volatile unsigned int * init_clk(int fd);
 void change_pwm(volatile unsigned int * pwm, int percent);
-void check_falling_edge(volatile unsigned int * gpio, int num);
+void check_falling_edge(void * args);
 int getbit(volatile unsigned int x, int n);
 void setbit(volatile unsigned int * x, int n);
 
-
+volatile unsigned int * gpio = NULL;    
+volatile unsigned int * pwm = NULL;
+volatile unsigned int * clk = NULL;	
+	
 
 int main(void)
 {
 	int fd = open( "/dev/mem", O_RDWR|O_SYNC );    
     int per;
-    volatile unsigned int * gpio = init_gpio(fd);    
-    volatile unsigned int * pwm = init_pwm(fd);
-    volatile unsigned int * clk = init_clk(fd);	
+    
+	gpio = init_gpio(fd);    
+    pwm = init_pwm(fd);
+    clk = init_clk(fd);	
+	
 	if(close(fd) < 0){ //No need to keep mem_fd open after mmap
                          //i.e. we can close /dev/mem
 	perror("couldn't close /dev/mem file descriptor");
@@ -81,9 +86,9 @@ int main(void)
 	clk[CLOCK_DIV/4] = 0x5A000000 | (75 << 12); // 19.2Mhz / 75
 	clk[CLOCK_CNTL/4] = 0x5A000011;
 	SEL1 -> sel7 = 0;
-	setbit(&gpio[GPFEN/4] , 17);
-	gpio[GPPUD/4] = 1;
-	setbit(&gpio[GPEDS/4] , 17);
+//	setbit(&gpio[GPFEN/4] , 17);
+//	gpio[GPPUD/4] = 1;
+//	setbit(&gpio[GPEDS/4] , 17);
 
 	pwm[CTL / 4] = 0;
 	usleep(10);
@@ -95,7 +100,7 @@ int main(void)
 
 	while(1)
 	{
-	check_falling_edge(gpio,17);
+	check_falling_edge(0);
 		
 	}
 
@@ -172,14 +177,20 @@ void change_pwm(volatile unsigned int * pwm , int percent)
     pwm[DAT1/4] = (volatile unsigned int) (((double) percent) / 100 * 256); 
     
 }
-void check_falling_edge(volatile unsigned int * gpio, int num)
+void check_falling_edge (void * args)
 {
-//	printf("LEV \ %d \n", getbit(gpio[GPLEV/4],17) );
-	if(getbit(gpio[GPEDS/4], 17) == 1)
+	while(1)
 	{
-	printf("Falling edge detected..\n");
+		if(getbit(gpio[GPLEV/4],17))
+		{
+			while(1)
+			{
+				if(!getbit(gpio[GPLEV/4],17))
+					   break;	
+			}
+			printf("Detected falling edge\n");
+		}
 	}
-	
 }
 int getbit(volatile unsigned int x, int n)
 {
