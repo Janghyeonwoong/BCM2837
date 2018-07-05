@@ -16,10 +16,12 @@
 #define GPFSEL1 0x4
 #define GPFSEL2 0x8
 #define GPFSEL3 0xC
-
+#define GPEDS 0x40
+#define GPAFEN 0x88
+#define GPAREN 0x7C
 #define GPSET 0x1C
 #define GPLEV 0x34
-
+#define GPPUD 0x94
 
 #define CTL 0x0
 #define STA 0x4
@@ -34,6 +36,7 @@ volatile unsigned int * init_gpio(int fd);
 volatile unsigned int * init_pwm(int fd);
 volatile unsigned int * init_clk(int fd);
 void change_pwm(volatile unsigned int * pwm, int percent);
+void check_falling_edge(volatile unsigned int * gpio, int num);
 
 int main(void)
 {
@@ -56,8 +59,10 @@ int main(void)
 	while( clk[CLOCK_CNTL/4] & 0x00000080){}
 	clk[CLOCK_DIV/4] = 0x5A000000 | (75 << 12); // 19.2Mhz / 75
 	clk[CLOCK_CNTL/4] = 0x5A000011;
-	
-
+	gpio[GPFSEL2/4] &= ~(7<<9);	
+	gpio[GPFSEL2/4] |= (0<<9);
+	gpio[GPAFEN/4] |= (1<<23);
+	gpio[GPPUD/4] = 1;
 
 	pwm[CTL / 4] = 0;
 	usleep(10);
@@ -147,4 +152,9 @@ void change_pwm(volatile unsigned int * pwm , int percent)
     pwm[DAT1/4] = (volatile unsigned int) (((double) percent) / 100 * 256); 
     
 }
+void check_falling_edge(volatile unsigned int * gpio, int num)
+{
+	if(gpio[GPAFEN] & 0x00800000)
+			printf("Falling edge detected..\n");
 
+}
