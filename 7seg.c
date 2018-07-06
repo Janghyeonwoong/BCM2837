@@ -1,7 +1,8 @@
+#include "7seg.h"
 extern void clearbit(volatile unsigned int * x, int n);
 extern void setbit(volatile unsigned int * x, int n);
 
-void 7seg_setup(void)
+void setup_7seg(void)
 {
 	GPSEL * Sel0 = gpio;
 	GPSEL * Sel1 = gpio+1;
@@ -21,37 +22,37 @@ void use_7seg(void * args)
 
 // change option to output
 	
-	if(7seg_value <= 4 )
+	if(seg_value <= 4 )
 	{
-		7seg_value = 4;
-		show_7seg(7seg_value);
+		seg_value = 4;
+		show_7seg(seg_value);
 	}
-	else if(7seg_value <= 8)
+	else if(seg_value <= 8)
 	{
-		show_7seg(7seg_value);
+		show_7seg(seg_value);
 	}
-	else if(7seg_value > 8)
+	else if(seg_value > 8)
 	{
-		7seg_value = 8;
-		show_7seg(7seg_value);
+		seg_value = 8;
+		show_7seg(seg_value);
 		
 	}
 	
 }
-void show_7seg(int 7seg)
+void show_7seg(int seg)
 {
 	while(1)
 	{
-		7seg_clear();
+		clear_7seg();
 
-		if(7seg == 4)
+		if(seg == 4)
 		{
 			setbit(&gpio[GPSET/4] , 6);
 			setbit(&gpio[GPSET/4] , 12);
-			setbit(&gpio[GPSET/4] , 19;
+			setbit(&gpio[GPSET/4] , 19);
 			setbit(&gpio[GPSET/4] , 26);
 		}
-		else if(7seg == 5)
+		else if(seg == 5)
 		{	
 			setbit(&gpio[GPSET/4] , 12);
 			setbit(&gpio[GPSET/4] , 13);
@@ -61,7 +62,7 @@ void show_7seg(int 7seg)
 	
 	
 		}
-		else if(7seg == 6)
+		else if(seg == 6)
 		{
 			setbit(&gpio[GPSET/4] , 12);
 			setbit(&gpio[GPSET/4] , 16);
@@ -70,7 +71,7 @@ void show_7seg(int 7seg)
 			setbit(&gpio[GPSET/4] , 26);
 	
 		}
-		else if(7seg == 7)
+		else if(seg == 7)
 		{
 			setbit(&gpio[GPSET/4] , 6);
 			setbit(&gpio[GPSET/4] , 12);
@@ -78,7 +79,7 @@ void show_7seg(int 7seg)
 			setbit(&gpio[GPSET/4] , 19);
 
 		}
-		else if(7seg == 8)
+		else if(seg == 8)
 		{
 			setbit(&gpio[GPSET/4] , 6);
 			setbit(&gpio[GPSET/4] , 12);
@@ -92,7 +93,7 @@ void show_7seg(int 7seg)
 	}
 
 }
-void 7seg_clear(void)
+void clear_7seg(void)
 {
 	clearbit(&gpio[GPCLR/4] , 6);
 	clearbit(&gpio[GPCLR/4] , 12);

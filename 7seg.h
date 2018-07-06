@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include "mythread.h"
-#include "7seg.h"
+
 
 #define BASE 0x3F000000
 #define GPIO_BASE 0x3F200000
@@ -51,14 +51,14 @@ typedef struct GPSEL {
 } GPSEL;
 
 
-volatile unsigned int * gpio = NULL;    
-volatile unsigned int * pwm = NULL;
-volatile unsigned int * clk = NULL;	
+volatile unsigned int * gpio;    
+volatile unsigned int * pwm;
+volatile unsigned int * clk;	
 	
 
-int 7seg_value;
+int seg_value;
 
-void 7seg_setup(void);
+void setup_7seg(void);
 /* * setup GPIO 6, 12, 13, 16 ,19, 20, 26
    * for using 7segment
    */
@@ -67,7 +67,7 @@ void use_7seg(void * args);
 /* * use this function for thread function. 
    * repeat this function for control 7seg
    */
-void show_7seg(int 7seg);
+void show_7seg(int seg);
 /* * show percentage that you've set
    */
-
+void clear_7seg(void);
