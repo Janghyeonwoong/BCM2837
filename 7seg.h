@@ -71,3 +71,5 @@ void show_7seg(int seg);
 /* * show percentage that you've set
    */
 void clear_7seg(void);
+
+void print(void);
