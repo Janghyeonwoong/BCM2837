@@ -104,52 +104,20 @@ int main(void)
 	}
 	reset();
 	usleep(50);
-	
-	setup_7seg();
-	setup_switch();
-	int * gpio17 = (int *) malloc(sizeof(int));
-	int * gpio27 = (int *) malloc(sizeof(int));
-	*gpio17 = 17;
-	*gpio27 = 27;
-/*	
-        GPSEL* SEL1 = &gpio[GPFSEL1/4];
-// we will use gpio 18 for PWM
-// and pwm period is 1kHz  
-	SEL1->sel8 = 2;
-
-	clk [CLOCK_CNTL/4] = 0x5A000000 | (1 << 5);
-	usleep(10);
-	while( clk[CLOCK_CNTL/4] & 0x00000080){}
-	clk[CLOCK_DIV/4] = 0x5A000000 | (75 << 12); // 19.2Mhz / 75
-	clk[CLOCK_CNTL/4] = 0x5A000011;
-
-	SEL1 -> sel7 = 0;
-//	setbit(&gpio[GPFEN/4] , 17);
-//	gpio[GPPUD/4] = 1;
-//	setbit(&gpio[GPEDS/4] , 17);
-
-	pwm[CTL / 4] = 0;
-	usleep(10);
-	pwm[RNG1/4] = 256;
-	usleep(10);
-	change_pwm(pwm , 90);
-	
-	pwm[CTL/4] |= (1 << 0);	
-//	gpio[GPSET/4] = 0;
-	//printf("GPSET = %d", gpio[GPSET/4]);
-	setup_7seg();
-*/
-
-	mythread_init(MYTHREAD_RR);
-	mythread_create(use_7seg , 0);
-	mythread_create(check_falling_edge_down, gpio27);
-        while(1)
+	setup_pwm();
+	int power = 0;	
+	while(1)
 	{
-	check_falling_edge_up(gpio17);
-		
-	}
+	  printf("입력해 라pwm 의강도를 ");
+	  scanf("%d",&power);
+	  if(power == 0)
+	  {
+		 break;
+	  }
+	  change_pwm(pwm, power);
+	}	
 
-	
+	reset();
 	return 0;
 }
 
