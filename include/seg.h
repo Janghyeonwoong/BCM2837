@@ -20,7 +20,6 @@ void clear_7seg(GPSEL * Sel0, GPSEL * Sel1, GPSEL * Sel2);
 // * Output Mode -> In Mode
 
 
-
 #ifdef __cplusplus
 }
 #endif

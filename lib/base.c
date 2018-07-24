@@ -5,6 +5,16 @@
 #include <fcntl.h>    
 #include <sys/mman.h>
 #include <unistd.h>
+#include "base.h"
+
+volatile unsigned int * gpio;    
+volatile unsigned int * pwm;
+volatile unsigned int * clk;
+
+int lock17 = 1; // mutex lock??
+int lock27 = 1;
+int seg_value = 6;
+
 
 void init(int fd)
 {
@@ -60,9 +70,7 @@ void init_pwm(int fd)
 
 void init_clk(int fd)
 {
-    if ( fd < 0 ){   o(int fd)
-{
-
+  
     if ( fd < 0 ){    
         printf( "can't open /dev/mem \n" );    
         exit(-1);    

@@ -1,5 +1,5 @@
 #include "base.h"
-
+#include "pwm.h"
 void change_pwm(volatile unsigned int * pwm , int percent)
 {
     pwm[DAT1/4] = (volatile unsigned int) (((double) percent) / 100 * 256); 

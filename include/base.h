@@ -68,13 +68,14 @@ typedef struct GPSEL {
     volatile unsigned int sel9:3;
     volatile unsigned int reserve:2;
 } GPSEL;
-volatile unsigned int * gpio;    
-volatile unsigned int * pwm;
-volatile unsigned int * clk;
 
-int lock17 = 1; // mutex lock??
-int lock27 = 1;
-int seg_value = 6;
+extern volatile unsigned int * gpio;    
+extern volatile unsigned int * pwm;
+extern volatile unsigned int * clk;
+
+extern int lock17; // mutex lock??
+extern int lock27;
+extern int seg_value;
 
 
 #ifdef __cplusplus
