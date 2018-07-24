@@ -21,7 +21,7 @@ void setup_pwm(void)
 	usleep(10);
 	pwm[RNG1/4] = 256;
 	usleep(10);
-	change_pwm(pwm ,50);
+	change_pwm(pwm ,0);
 	
 	pwm[CTL/4] |= (1 << 0);	
 
