@@ -3,6 +3,7 @@
 #include "base.h"
 #include "pwm.h"
 #include "seg.h"
+#include "main.h"
 
 extern "C" {
 #include <pthread.h>
@@ -11,6 +12,12 @@ using namespace std;
 using namespace cv;
 
 bool stop = 0;
+
+enum tree { 
+MOTOR,
+STOP
+}branch;	
+
 
 int main(void)
 {
@@ -38,15 +45,23 @@ int main(void)
 	const int gpio17 = 17;
 	const int gpio27 = 27;	
 	pthread_t tid[5];
-	analyze_image capture;
-	
-
-
-
+	image_and_capture cap;
 	pthread_create(tid[0], NULL, use_7seg, NULL);
 	pthread_create(tid[1], NULL, check_falling_edge_down, &gpio17);
 	pthread_create(tid[2], NULL, check_falling_edge_down, &gpio27);
 
+	branch = cap.capture_3min();
+	switch(branch)
+	{
+		case MOTOR : change_pwm(pwm , 80);
+				     sleep(3);
+					 cap.video_capture();
+					 change_pwm(pwm , 0 );
+					 break;
+		default : break;
+
+
+	}
 
 
 	
@@ -82,20 +97,20 @@ class image_and_capture{
 			circles.reserve(3);			
 			histograms.reserve(4);
 		}
-		bool capture_3min(void); // 
+		int capture_3min(void); // 
 		bool capture_30sec(void);
 		void cutting_image(Mat image, Rect(0, 480 - 55, 120, 54) );
 		double percent(Mat image); // change image to HSV and extract yellow color
 		void calc_histogram(Mat image); // make two dimension histogram H(hue) S(saturation
 		double check_similarity(Mat source, Mat compare); // find the value that similarity
 		int counting_circle(Mat image); // find circles at roi 
-
+		void video_capture(void);
 }
 /* * you have to make enum fucntion for switch-case 
    *
    */ 
 
-bool image_and_cpature::capture_3min(void)
+int image_and_cpature::capture_3min(void)
 	{
 		while(stop == false)
 		{
@@ -104,10 +119,11 @@ bool image_and_cpature::capture_3min(void)
 			if(per > double(seg_value * 10) )
 			{
 				if(capture_30sec())
-					return true;
+					return MOTOR;
 			}
 			sleep(60*3);
 		}
+		return STOP;
 
 	}
 bool image_and_capture::capture_30sec(void)
@@ -121,8 +137,10 @@ bool image_and_capture::capture_30sec(void)
 			calc_histogram(images[i]);
 			similar = check_similarity(histograms[0] , histograms[i+1]);
 			if(similar < 90)
+			{
+				cout << "similarity < 90" << endl;
 				return false;
-			
+			}
 		}
 		return true;
 	}
@@ -154,16 +172,16 @@ void image_and_capture::calc_histogram(Mat image)
 {
 	Mat hsv;
 	Mat hist;
-	Vec3i bins(30, 42, 0);
-	Vec3f range(180, 256, 0);
+	static Vec3i bins(30, 42, 0);
+	static Vec3f range(180, 256, 0);
 
 	cvtColor(image, Hsv, CV_BGR2HSV);
 
-	int channels[] = { 0 ,1 };
-	int histSize[] = { bins[0], bins[1]};
+	static int channels[] = { 0 ,1 };
+	static int histSize[] = { bins[0], bins[1]};
 
-	float range1[] = { 0 , range[0] };
-	float range2[] = { 0 , range[1] };
+	static float range1[] = { 0 , range[0] };
+	static float range2[] = { 0 , range[1] };
 	
 	const float*  ranges[] = { range1, range2};
 
@@ -186,4 +204,16 @@ int image_and_capture::counting_circle(Mat image)
 	return (thie->circles).size();
 }
 
+void image_and_capture::video_capture(void)
+{
+	int i(0);
+	circles.clear();
+	while(i == 0)
+	{
+		capture >> image;
+		cutting_image(image);
+		i = counting_circle(roi);
+	}
+	
 
+}
