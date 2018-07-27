@@ -5,7 +5,7 @@ void setup_7seg(void)
 {
 	gpio[GPSET/4] |= (1 << 6) + (1 << 12) + (1 << 13) + (1 << 16) + (1 << 19) + (1 << 20) + (1 << 26);
 }
-void use_7seg(void * args)
+void * use_7seg(void * args)
 {
 
 // change option to output
@@ -13,10 +13,8 @@ void use_7seg(void * args)
 //clear_7seg();
 int i = 0;
 while(1)
-  {	
-   if(lock17 == 1)
-   {
-	if(seg_value < 4 )
+  {
+        if(seg_value < 4 )
 	{
 		seg_value = 4;
 		show_7seg(seg_value);
@@ -31,27 +29,8 @@ while(1)
 		show_7seg(seg_value);
 		
 	}
-   lock17 = 0;
-   }
-   if(lock27 == 1)
-   {
-	if(seg_value < 4 )
-	{
-		seg_value = 4;
-		show_7seg(seg_value);
-	}
-	else if(seg_value <= 8)
-	{ 
-		show_7seg(seg_value);
-	}
-	else if(seg_value > 8)
-	{
-		seg_value = 8;
-		show_7seg(seg_value);
-		
-	}
-   lock27 = 0;
-   }
+   
+   
 
   }
 }

@@ -11,8 +11,8 @@ volatile unsigned int * gpio;
 volatile unsigned int * pwm;
 volatile unsigned int * clk;
 
-int lock17 = 1; // mutex lock??
-int lock27 = 1;
+int lock17 = 0; // mutex lock??
+int lock27 = 0;
 int seg_value = 6;
 
 
@@ -86,7 +86,7 @@ void init_clk(int fd)
         exit(-1);    
     }   
     
-    gpio = (volatile unsigned int *)gpio_memory_map;
+    clk = (volatile unsigned int *)gpio_memory_map;
 	 
  
 }
@@ -109,12 +109,13 @@ void reset(void)
 	return;	
 
 }
-void check_falling_edge_up (void * args)
+void * check_falling_edge_up (void * args)
 {
 	while(1)
 	{
-		if(getbit(gpio[GPLEV/4],(*(int *)args)))
+		if(getbit(gpio[GPLEV/4],(*(int *)args)) & lock27 == 0)
 		{
+			lock17 = 1;
 			while(1)
 			{
 				if(getbit(gpio[GPLEV/4],(*(int*)args))== 0)
@@ -122,27 +123,28 @@ void check_falling_edge_up (void * args)
 			}
 			usleep(5000);
 			seg_value++;
-			lock17 = 1;
-			printf("detected falling edge ! \n");	
+			lock17 = 0;
+			printf("detected falling edge up! \n");	
 		}
 	}
 }
 
-void check_falling_edge_down (void * args)
+void * check_falling_edge_down (void * args)
 {
 	while(1)
 	{
-		if(getbit(gpio[GPLEV/4],(*(int *)args)))
+		if(getbit(gpio[GPLEV/4],(*(int *)args)) & lock17 == 0)
 		{
+			lock27 = 1;
 			while(1)
 			{
-				if(getbit(gpio[GPLEV/4],(*(int*)args))== 0)
+				if(getbit(gpio[GPLEV/4],(*(int*)args))== 0 )
 					   break;	
 			}
 			usleep(5000);
 			seg_value--;
-			lock27 = 1;
-			printf("detected falling edge ! \n");	
+			lock27 = 0;
+			printf("detected falling edge down! \n");	
 		}
 	}
 }
