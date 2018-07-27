@@ -9,7 +9,7 @@ void setup_7seg(void);
 /** setup GPIO 6, 12, 13, 16 ,19, 20, 26
   * for using 7segment
   */
-void use_7seg(void * args);
+void * use_7seg(void * args);
 /** use this function for thread function. 
   * repeat this function for control 7seg
   */

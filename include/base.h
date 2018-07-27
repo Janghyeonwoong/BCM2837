@@ -41,6 +41,7 @@ extern "C"{
 #include <sys/stat.h>    
 #include <fcntl.h>    
 #include <sys/mman.h>
+#include <pthread.h>
 #include <unistd.h>
 
 void init(int fd);
@@ -48,8 +49,8 @@ void init_gpio(int fd);
 void init_pwm(int fd);
 void init_clk(int fd);
 void reset(void);
-void check_falling_edge_up(void * args);
-void check_falling_edge_down(void * args);
+void * check_falling_edge_up(void * args);
+void * check_falling_edge_down(void * args);
 int getbit(volatile unsigned int x, int n);
 void setbit(volatile unsigned int * x, int n);
 void clearbit(volatile unsigned int * x, int n);
