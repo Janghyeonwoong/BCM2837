@@ -64,39 +64,39 @@ int main(void)
 
 int image_and_capture::capture_3min(void)
 {
+	
 	while (stop == false)
 	{
 		capture >> image;
-		imshow("image_3min", image);
 		per = percent(image);
-		if (per > double(seg_value * 10))
+		if (per > 70)
 		{
 			if (capture_30sec())
 				return MOTOR;
 		}
-		sleep(10);
+		Sleep(10 * 1000);
 	}
 	return STOP;
 
 }
 bool image_and_capture::capture_30sec(void)
 {
-	
+
 	calc_histogram(image, 0);
 	for (int i = 0; i<3; i++)
 	{
-		sleep(5);
+		Sleep(5*1000);
 		capture >> images[i];
 		imshow("image_30sec", images[i]);
 		waitKey(0);
-		calc_histogram(images[i], i+1);
+		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
 		if (similar < 90)
 		{
-			cout << "similarity :"<< similar  << endl;
+			cout << "similarity :" << similar << endl;
 			return false;
 		}
-		cout << "similar :"<<similar << endl;
+		cout << "similar :" << similar << endl;
 	}
 	return true;
 }
@@ -107,20 +107,24 @@ void image_and_capture::cutting_image(Mat image, Rect rec = Rect(0, 480 - 55, 12
 }
 double image_and_capture::percent(Mat image)
 {
-	cvtColor(image, image, COLOR_BGR2HSV);
-	inRange(image, Scalar(30 / 2, 30, 30), Scalar(80 / 2, 255, 255), image);
+	Mat hsv;
+	cvtColor(image, hsv, COLOR_BGR2HSV);
+	
+	inRange(hsv, Scalar(30 / 2, 30, 30), Scalar(80 / 2, 255, 255), hsv);
+	
 	unsigned int count = 0;
-	for (int i = 0; i < image.rows; i++)
+	for (int i = 0; i < hsv.rows; i++)
 	{
-		for (int j = 0; j < image.cols; j++)
+		for (int j = 0; j < hsv.cols; j++)
 		{
-			if (image.at<uchar>(i, j) == 0)
+			if (hsv.at<uchar>(i, j) == 0)
 				count++;
 		}
 	}
+
 	double per;
 	per = (double)count / (double)image.rows / (double)image.cols * 100;
-	cout << (double)per << endl;
+	cout << "사진의 %는 "<<(double)per << endl;
 	return per;
 }
 
@@ -142,14 +146,14 @@ void image_and_capture::calc_histogram(Mat image, int num)
 	const float*  ranges[] = { range1, range2 };
 
 	calcHist(&hsv, 1, channels, Mat(), hist, 2, histSize, ranges);
-	
+
 	normalize(hist, hist, 0, 1, NORM_MINMAX);
 	histograms[num] = hist;
 }
 
 double image_and_capture::check_similarity(Mat source, Mat compare)
 {
-	double value = compareHist(source, compare, CV_COMP_CORREL) * 100 ;
+	double value = compareHist(source, compare, CV_COMP_CORREL) * 100;
 	return value;
 }
 
