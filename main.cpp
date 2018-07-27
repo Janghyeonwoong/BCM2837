@@ -5,19 +5,13 @@
 #include "seg.h"
 #include "main.h"
 
-extern "C" {
-#include <pthread.h>
-}
 using namespace std;
 using namespace cv;
 
 bool stop = 0;
 
-enum tree { 
-MOTOR,
-STOP
-}branch;	
-
+const int MOTOR = 0;
+const int STOP = 1;
 
 int main(void)
 {
@@ -37,18 +31,18 @@ int main(void)
 	}
 	reset();
 	usleep(50);
-	setup_pwm();
 	setup_switch();
 	setup_7seg();
-
+	setup_pwm();
 //	---------------------- base setup ----------------------------
-	const int gpio17 = 17;
-	const int gpio27 = 27;	
+	int gpio17 = 17;
+	int gpio27 = 27;	
 	pthread_t tid[5];
+	int branch(0);
 	image_and_capture cap;
-	pthread_create(tid[0], NULL, use_7seg, NULL);
-	pthread_create(tid[1], NULL, check_falling_edge_down, &gpio17);
-	pthread_create(tid[2], NULL, check_falling_edge_down, &gpio27);
+	pthread_create(&tid[0], NULL, use_7seg, NULL);
+	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio17);
+	pthread_create(&tid[2], NULL, check_falling_edge_down, (void *)&gpio27);
 
 	branch = cap.capture_3min();
 	switch(branch)
@@ -73,32 +67,36 @@ int image_and_capture::capture_3min(void)
 	while (stop == false)
 	{
 		capture >> image;
+		imshow("image_3min", image);
 		per = percent(image);
 		if (per > double(seg_value * 10))
 		{
 			if (capture_30sec())
 				return MOTOR;
 		}
-		sleep(60 * 3);
+		sleep(10);
 	}
 	return STOP;
 
 }
 bool image_and_capture::capture_30sec(void)
 {
-	histograms.clear();
-	calc_histogram(image);
+	
+	calc_histogram(image, 0);
 	for (int i = 0; i<3; i++)
 	{
-		sleep(30);
+		sleep(5);
 		capture >> images[i];
-		calc_histogram(images[i]);
+		imshow("image_30sec", images[i]);
+		waitKey(0);
+		calc_histogram(images[i], i+1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
 		if (similar < 90)
 		{
-			cout << "similarity < 90" << endl;
+			cout << "similarity :"<< similar  << endl;
 			return false;
 		}
+		cout << "similar :"<<similar << endl;
 	}
 	return true;
 }
@@ -126,7 +124,7 @@ double image_and_capture::percent(Mat image)
 	return per;
 }
 
-void image_and_capture::calc_histogram(Mat image)
+void image_and_capture::calc_histogram(Mat image, int num)
 {
 	Mat hsv;
 	Mat hist;
@@ -146,12 +144,12 @@ void image_and_capture::calc_histogram(Mat image)
 	calcHist(&hsv, 1, channels, Mat(), hist, 2, histSize, ranges);
 	
 	normalize(hist, hist, 0, 1, NORM_MINMAX);
-	histograms.push_back(hist);
+	histograms[num] = hist;
 }
 
 double image_and_capture::check_similarity(Mat source, Mat compare)
 {
-	double value = compareHist(source, compare, CV_COMP_CORREL);
+	double value = compareHist(source, compare, CV_COMP_CORREL) * 100 ;
 	return value;
 }
 
