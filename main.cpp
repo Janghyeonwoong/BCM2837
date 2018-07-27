@@ -74,7 +74,7 @@ int image_and_capture::capture_3min(void)
 			if (capture_30sec())
 				return MOTOR;
 		}
-		Sleep(10 * 1000);
+		sleep(10);
 	}
 	return STOP;
 
@@ -85,10 +85,8 @@ bool image_and_capture::capture_30sec(void)
 	calc_histogram(image, 0);
 	for (int i = 0; i<3; i++)
 	{
-		Sleep(5*1000);
+		sleep(5);
 		capture >> images[i];
-		imshow("image_30sec", images[i]);
-		waitKey(0);
 		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
 		if (similar < 90)
