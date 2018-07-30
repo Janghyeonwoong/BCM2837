@@ -64,9 +64,12 @@ int main(void)
 
 int image_and_capture::capture_3min(void)
 {
-	
+
 	while (stop == false)
 	{
+		capture.release();
+		capture.open(0);
+		
 		capture >> image;
 		per = percent(image);
 		if (per > 70)
@@ -75,6 +78,7 @@ int image_and_capture::capture_3min(void)
 				return MOTOR;
 		}
 		sleep(10);
+		
 	}
 	return STOP;
 
@@ -86,7 +90,11 @@ bool image_and_capture::capture_30sec(void)
 	for (int i = 0; i<3; i++)
 	{
 		sleep(5);
+		capture.release();
+		capture.open(0);
+
 		capture >> images[i];
+
 		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
 		if (similar < 90)
@@ -107,9 +115,9 @@ double image_and_capture::percent(Mat image)
 {
 	Mat hsv;
 	cvtColor(image, hsv, COLOR_BGR2HSV);
-	
+
 	inRange(hsv, Scalar(30 / 2, 30, 30), Scalar(80 / 2, 255, 255), hsv);
-	
+
 	unsigned int count = 0;
 	for (int i = 0; i < hsv.rows; i++)
 	{
@@ -122,7 +130,7 @@ double image_and_capture::percent(Mat image)
 
 	double per;
 	per = (double)count / (double)image.rows / (double)image.cols * 100;
-	cout << "사진의 %는 "<<(double)per << endl;
+	cout << "사진의 %는 " << (double)per << endl;
 	return per;
 }
 
@@ -158,8 +166,11 @@ double image_and_capture::check_similarity(Mat source, Mat compare)
 int image_and_capture::counting_circle(Mat image)
 {
 	cvtColor(image, image, CV_BGR2GRAY);
-	//GaussianBlur(gray, gray, Size(9, 9), 2, 2);
+	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
+
 	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 0, 100);
+	imshow("circle", image);
+	waitKey(50);
 	return (this->circles).size();
 }
 
@@ -168,10 +179,11 @@ void image_and_capture::video_capture(void)
 	int i(0);
 	circles.clear();
 	while (i == 0)
-	{
+	{		
 		capture >> image;
 		cutting_image(image);
 		i = counting_circle(roi);
+		cout << "원의 개수는 : " << i << endl;
 	}
 
 
