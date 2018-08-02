@@ -34,6 +34,7 @@ int main(void)
 	setup_switch();
 	setup_7seg();
 	setup_pwm();
+	flash_off();
 //	---------------------- base setup ----------------------------
 	int gpio17 = 17;
 	int gpio27 = 27;	
@@ -68,8 +69,9 @@ int image_and_capture::capture_3min(void)
 	while (stop == false)
 	{
 		capture.release();
+		flash_on();
 		capture.open(0);
-		
+		flash_off();
 		capture >> image;
 		per = percent(image);
 		if (per > 70)
@@ -91,8 +93,10 @@ bool image_and_capture::capture_30sec(void)
 	{
 		sleep(5);
 		capture.release();
+		flash_on();
 		capture.open(0);
-
+		flash_off();
+	
 		capture >> images[i];
 
 		calc_histogram(images[i], i + 1);
@@ -178,6 +182,7 @@ void image_and_capture::video_capture(void)
 {
 	int i(0);
 	circles.clear();
+	flash_on();
 	while (i == 0)
 	{		
 		capture >> image;
@@ -185,6 +190,6 @@ void image_and_capture::video_capture(void)
 		i = counting_circle(roi);
 		cout << "원의 개수는 : " << i << endl;
 	}
-
+	flash_off();
 
 }

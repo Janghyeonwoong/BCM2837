@@ -55,6 +55,8 @@ int getbit(volatile unsigned int x, int n);
 void setbit(volatile unsigned int * x, int n);
 void clearbit(volatile unsigned int * x, int n);
 void setup_switch(void);
+void flash_on(void);
+void flash_off(void);
 
 typedef struct GPSEL {
     volatile unsigned int sel0:3;

@@ -167,7 +167,19 @@ void setup_switch(void)
 	GPSEL* Sel1 = &gpio[GPFSEL1/4];
 	GPSEL* Sel2 = &gpio[GPFSEL2/4];
 
+	Sel0->sel5 = 1;
 	Sel1->sel7 = 0;
 	Sel2->sel7 = 0;
 	
-} 
+}
+void flash_on(void)
+{
+	gpio[GPSET/4] = 1 << 5;
+	sleep(1);
+}
+void flash_off(void)
+{
+	sleep(1);
+	gpio[GPCLR/4] = 1 << 5;
+
+}
