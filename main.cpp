@@ -69,6 +69,7 @@ int image_and_capture::capture_3min(void)
 	while (stop == false)
 	{
 		capture.release();
+
 		flash_on();
 		capture.open(0);
 		flash_off();
@@ -173,7 +174,6 @@ int image_and_capture::counting_circle(Mat image)
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 
 	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 0, 100);
-	imshow("circle", image);
 	waitKey(50);
 	return (this->circles).size();
 }
