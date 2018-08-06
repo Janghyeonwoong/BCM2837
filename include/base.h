@@ -79,7 +79,7 @@ extern volatile unsigned int * clk;
 extern int lock17; // mutex lock??
 extern int lock27;
 extern int seg_value;
-
+extern int STOP;
 
 #ifdef __cplusplus
 }

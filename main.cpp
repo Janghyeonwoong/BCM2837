@@ -40,6 +40,8 @@ int main(void)
 	int gpio27 = 27;	
 	pthread_t tid[5];
 	int branch(0);
+	float target = 60;
+
 	image_and_capture cap;
 	pthread_create(&tid[0], NULL, use_7seg, NULL);
 	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio17);
@@ -48,10 +50,13 @@ int main(void)
 	branch = cap.capture_3min();
 	switch(branch)
 	{
-		case MOTOR : change_pwm(pwm , 80);
-				     sleep(3);
+		case MOTOR : pthread_create(&tid[3], NULL, pid_control, (void *)&target);
 					 cap.video_capture();
-					 change_pwm(pwm , 0 );
+					 pthread_join(&tid[3], NULL);
+					 target = 0;
+					 pthread_create(&tid[4], NULL, pid_control, (void *)&target);
+					 pthread_join(&tid[4], NULL);
+					 target = 60;
 					 break;
 		default : break;
 
@@ -174,6 +179,7 @@ int image_and_capture::counting_circle(Mat image)
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 
 	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 0, 100);
+	STOP = (this->circles).size();
 	waitKey(50);
 	return (this->circles).size();
 }
