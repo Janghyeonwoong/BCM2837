@@ -36,7 +36,7 @@ int main(void)
 	setup_pwm();
 	flash_off();
 //	---------------------- base setup ----------------------------
-	int gpio17 = 17;
+	int gpio25 = 25;
 	int gpio27 = 27;	
 	pthread_t tid[5];
 	int branch(0);
@@ -44,7 +44,7 @@ int main(void)
 
 	image_and_capture cap;
 	pthread_create(&tid[0], NULL, use_7seg, NULL);
-	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio17);
+	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio25);
 	pthread_create(&tid[2], NULL, check_falling_edge_down, (void *)&gpio27);
 
 	branch = cap.capture_3min();
