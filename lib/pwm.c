@@ -2,11 +2,13 @@
 #include "pwm.h"
 void change_pwm(volatile unsigned int * pwm , float percent)
 {
-	if(percent < 0)
+	if(percent < (float) 0 )
 	{
+		printf("일 로들어오\n");
 		percent = 0;
+		printf("percent = %f \n",percent);
 	}
-    pwm[DAT1/4] = (volatile unsigned int) (((float) percent) / 100 * 256); 
+    pwm[DAT1/4] = (volatile unsigned int) ((percent) / 100.f * 256); 
     
 }
 void setup_pwm(void)
@@ -31,9 +33,9 @@ void setup_pwm(void)
 }
 void * pid_control(void * target)
 {
-	static float Kp = 2;
-	static float Ki = 1;
-	static float Kd = 1;
+	static float Kp = 0.1;
+	static float Ki = 0.13;
+	static float Kd = 0.1;
 
 	static float Kp_term = 0;
 	static float Ki_term = 0;
@@ -48,8 +50,8 @@ void * pid_control(void * target)
 	static const float dt = 0.1; // 0.1 sec
 
 	target_value = (* (float *) target);
-
-	if(target_value == 60)
+	printf("target_value = %f\n", (float)target_value);
+	if(target_value == 38.d)
 	{
 	while(STOP == 0)
 	{
@@ -60,7 +62,7 @@ void * pid_control(void * target)
 		Kd_term = Kd * (error - prev_error);
 		
 		current_value = Kp_term + Ki_term + Kd_term;
-	
+		printf("current_value = %f\n",current_value);
 		prev_error = error;
 		change_pwm(pwm , current_value);
 		usleep(1000 * 95); // maybe 0.1 sec
@@ -79,12 +81,14 @@ void * pid_control(void * target)
 		Kd_term = Kd * (error - prev_error);
 		
 		current_value = Kp_term + Ki_term + Kd_term;
-	
+		printf("current_value = %f\n",current_value);
+
 		prev_error = error;
 		change_pwm(pwm , current_value);
 		usleep(1000 * 95); // maybe 0.1 sec
 	
 		}
+		change_pwm(pwm , 0);
 		return NULL;
 
 	}
