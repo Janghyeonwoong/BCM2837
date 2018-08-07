@@ -11,7 +11,7 @@ volatile unsigned int * gpio;
 volatile unsigned int * pwm;
 volatile unsigned int * clk;
 
-int lock17 = 0; // mutex lock??
+int lock25 = 0; // mutex lock??
 int lock27 = 0;
 int seg_value = 6;
 
@@ -111,29 +111,32 @@ void reset(void)
 }
 void * check_falling_edge_up (void * args)
 {
+
 	while(1)
 	{
-		if(getbit(gpio[GPLEV/4],(*(int *)args)) & lock27 == 0)
+		if(getbit(gpio[GPLEV/4],(*(int *)args)) && lock27 == 0)
 		{
-			lock17 = 1;
+			lock25 = 1;
 			while(1)
 			{
-				if(getbit(gpio[GPLEV/4],(*(int*)args))== 0)
+				if(getbit(gpio[GPLEV/4],(*(int *)args))== 0)
 					   break;	
 			}
 			usleep(5000);
 			seg_value++;
-			lock17 = 0;
+			lock25 = 0;
 			printf("detected falling edge up! \n");	
 		}
 	}
+
+	
 }
 
 void * check_falling_edge_down (void * args)
 {
 	while(1)
 	{
-		if(getbit(gpio[GPLEV/4],(*(int *)args)) & lock17 == 0)
+		if(getbit(gpio[GPLEV/4],(*(int *)args)) && lock25 == 0)
 		{
 			lock27 = 1;
 			while(1)
@@ -168,7 +171,7 @@ void setup_switch(void)
 	GPSEL* Sel2 = &gpio[GPFSEL2/4];
 
 	Sel0->sel5 = 1;
-	Sel1->sel7 = 0;
+	Sel2->sel5 = 0;
 	Sel2->sel7 = 0;
 	
 }

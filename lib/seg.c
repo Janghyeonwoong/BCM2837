@@ -40,7 +40,9 @@ void show_7seg(int seg)
 	GPSEL * Sel0 = &gpio[GPFSEL0/4];
 	GPSEL * Sel1 = &gpio[GPFSEL1/4];
 	GPSEL * Sel2 = &gpio[GPFSEL2/4];
-
+	static int latest_seg = 0;
+	if(latest_seg == 0 || latest_seg != seg)
+	{
 	clear_7seg(Sel0, Sel1, Sel2);
 
 	if(seg == 4)
@@ -86,6 +88,10 @@ void show_7seg(int seg)
 		Sel2->sel6 = 1;
 	
 	}
+	latest_seg = seg;
+	}
+	else
+		return;
 
 }
 void clear_7seg(GPSEL * Sel0, GPSEL * Sel1, GPSEL * Sel2)
