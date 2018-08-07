@@ -14,7 +14,7 @@ volatile unsigned int * clk;
 int lock25 = 0; // mutex lock??
 int lock27 = 0;
 int seg_value = 6;
-
+int STOP = 0;
 
 void init(int fd)
 {

@@ -1,8 +1,14 @@
 #include "base.h"
 #include "pwm.h"
-void change_pwm(volatile unsigned int * pwm , int percent)
+void change_pwm(volatile unsigned int * pwm , float percent)
 {
-    pwm[DAT1/4] = (volatile unsigned int) (((double) percent) / 100 * 256); 
+	if(percent < (float) 0 )
+	{
+		printf("일 로들어오\n");
+		percent = 0;
+		printf("percent = %f \n",percent);
+	}
+    pwm[DAT1/4] = (volatile unsigned int) ((percent) / 100.f * 256); 
     
 }
 void setup_pwm(void)
@@ -24,5 +30,67 @@ void setup_pwm(void)
 	
 	pwm[CTL/4] |= (1 << 0);	
 
+}
+void * pid_control(void * target)
+{
+	static float Kp = 0.1;
+	static float Ki = 0.13;
+	static float Kd = 0.1;
+
+	static float Kp_term = 0;
+	static float Ki_term = 0;
+	static float Kd_term = 0;
+
+	static float error = 0;
+	static float prev_error = 0;
+
+	static float target_value = 0; // target_speed for motor
+	static float current_value = 0;
+
+	static const float dt = 0.1; // 0.1 sec
+
+	target_value = (* (float *) target);
+	printf("target_value = %f\n", (float)target_value);
+	if(target_value == 38.d)
+	{
+	while(STOP == 0)
+	{
+		error = target_value - current_value;
+		
+		Kp_term = error * Kp;
+		Ki_term += Ki * error;
+		Kd_term = Kd * (error - prev_error);
+		
+		current_value = Kp_term + Ki_term + Kd_term;
+		printf("current_value = %f\n",current_value);
+		prev_error = error;
+		change_pwm(pwm , current_value);
+		usleep(1000 * 95); // maybe 0.1 sec
+	
+		}
+		return NULL;
+	}
+	else if(target_value == 0)
+	{
+		for(int i = 0; i < 10; i++)
+		{
+		error = target_value - current_value;
+		
+		Kp_term = error * Kp;
+		Ki_term += Ki * error;
+		Kd_term = Kd * (error - prev_error);
+		
+		current_value = Kp_term + Ki_term + Kd_term;
+		printf("current_value = %f\n",current_value);
+
+		prev_error = error;
+		change_pwm(pwm , current_value);
+		usleep(1000 * 95); // maybe 0.1 sec
+	
+		}
+		change_pwm(pwm , 0);
+		return NULL;
+
+	}
 }
 
