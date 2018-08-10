@@ -11,7 +11,7 @@ using namespace cv;
 bool stop = 0;
 
 const int MOTOR = 0;
-const int STOP = 1;
+//const int STOP = 1;
 
 int main(void)
 {
@@ -40,29 +40,31 @@ int main(void)
 	int gpio27 = 27;	
 	pthread_t tid[5];
 	int branch(0);
-	float target = 60;
+	float target = 38;
 
 	image_and_capture cap;
 	pthread_create(&tid[0], NULL, use_7seg, NULL);
 	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio25);
 	pthread_create(&tid[2], NULL, check_falling_edge_down, (void *)&gpio27);
-
+	while(1)
+	{
 	branch = cap.capture_3min();
 	switch(branch)
-	{
+	 {
 		case MOTOR : pthread_create(&tid[3], NULL, pid_control, (void *)&target);
+			     		 
 					 cap.video_capture();
-					 pthread_join(&tid[3], NULL);
+					 pthread_join(tid[3], NULL);
 					 target = 0;
 					 pthread_create(&tid[4], NULL, pid_control, (void *)&target);
-					 pthread_join(&tid[4], NULL);
-					 target = 60;
+					 pthread_join(tid[4], NULL);
+					 target = 38;
 					 break;
 		default : break;
 
-
+ 
+ 	 }
 	}
-
 
 	
 	return 0;
@@ -80,7 +82,7 @@ int image_and_capture::capture_3min(void)
 		flash_off();
 		capture >> image;
 		per = percent(image);
-		if (per > 70)
+		if (per > seg_value * 10)
 		{
 			if (capture_30sec())
 				return MOTOR;
@@ -107,7 +109,7 @@ bool image_and_capture::capture_30sec(void)
 
 		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
-		if (similar < 90)
+		if (similar < 85)
 		{
 			cout << "similarity :" << similar << endl;
 			return false;
@@ -116,7 +118,7 @@ bool image_and_capture::capture_30sec(void)
 	}
 	return true;
 }
-void image_and_capture::cutting_image(Mat image, Rect rec = Rect(0, 480 - 55, 120, 54))
+void image_and_capture::cutting_image(Mat image, Rect rec = Rect(535, 0, 114, 150))
 {
 	roi = image(rec);
 
@@ -124,9 +126,10 @@ void image_and_capture::cutting_image(Mat image, Rect rec = Rect(0, 480 - 55, 12
 double image_and_capture::percent(Mat image)
 {
 	Mat hsv;
-	cvtColor(image, hsv, COLOR_BGR2HSV);
+	GaussianBlur(image, hsv, Size(5,5), 0);
+	cvtColor(hsv, hsv, COLOR_BGR2HSV);
 
-	inRange(hsv, Scalar(30 / 2, 30, 30), Scalar(80 / 2, 255, 255), hsv);
+	inRange(hsv, Scalar(13, 15, 40), Scalar(80 / 2, 230, 230), hsv);
 
 	unsigned int count = 0;
 	for (int i = 0; i < hsv.rows; i++)
@@ -178,7 +181,7 @@ int image_and_capture::counting_circle(Mat image)
 	cvtColor(image, image, CV_BGR2GRAY);
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 
-	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 0, 100);
+	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 15, 30);
 	STOP = (this->circles).size();
 	waitKey(50);
 	return (this->circles).size();
@@ -189,12 +192,16 @@ void image_and_capture::video_capture(void)
 	int i(0);
 	circles.clear();
 	flash_on();
-	while (i == 0)
+	capture.release();
+	capture.open(0);
+	while (i == 0 && STOP < 1)
 	{		
 		capture >> image;
 		cutting_image(image);
+		imshow("circle",image);
 		i = counting_circle(roi);
 		cout << "원의 개수는 : " << i << endl;
+		
 	}
 	flash_off();
 

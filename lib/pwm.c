@@ -46,11 +46,11 @@ void * pid_control(void * target)
 
 	static float target_value = 0; // target_speed for motor
 	static float current_value = 0;
-
+	static int time = 0;
 	static const float dt = 0.1; // 0.1 sec
 
 	target_value = (* (float *) target);
-	printf("target_value = %f\n", (float)target_value);
+	//printf("target_value = %f\n", (float)target_value);
 	if(target_value == 38.d)
 	{
 	while(STOP == 0)
@@ -65,9 +65,17 @@ void * pid_control(void * target)
 		printf("current_value = %f\n",current_value);
 		prev_error = error;
 		change_pwm(pwm , current_value);
-		usleep(1000 * 95); // maybe 0.1 sec
-	
+		usleep(1000 * 97); // maybe 0.1 sec
+		if(++time >100) // 10초가넘어가면 알아서 정지;
+		{
+		    time = 0;
+		    STOP = 1;
+		    printf("there is no circle.. in 10sec \n ");
+		    return NULL;
+
 		}
+		
+	}
 		return NULL;
 	}
 	else if(target_value == 0)
