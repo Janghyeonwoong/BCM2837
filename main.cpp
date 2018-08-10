@@ -51,14 +51,15 @@ int main(void)
 	branch = cap.capture_3min();
 	switch(branch)
 	 {
-		case MOTOR : pthread_create(&tid[3], NULL, pid_control, (void *)&target);
-			     		 
-					 cap.video_capture();
-					 pthread_join(tid[3], NULL);
-					 target = 0;
-					 pthread_create(&tid[4], NULL, pid_control, (void *)&target);
-					 pthread_join(tid[4], NULL);
-					 target = 38;
+		case MOTOR :STOP = 0; 
+	 	 pthread_create(&tid[3], NULL, pid_control, (void *)&target);
+	 	 target = 38; 
+		 cap.video_capture();
+		 pthread_join(tid[3], NULL);
+		 target = 0;
+		 pthread_create(&tid[4], NULL, pid_control, (void *)&target);
+		 pthread_join(tid[4], NULL);
+					 
 					 break;
 		default : break;
 
@@ -81,6 +82,8 @@ int image_and_capture::capture_3min(void)
 		capture.open(0);
 		flash_off();
 		capture >> image;
+		imshow("image",image);
+		capture.release();
 		per = percent(image);
 		if (per > seg_value * 10)
 		{
@@ -106,7 +109,7 @@ bool image_and_capture::capture_30sec(void)
 		flash_off();
 	
 		capture >> images[i];
-
+		capture.release();
 		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
 		if (similar < 85)
@@ -118,7 +121,7 @@ bool image_and_capture::capture_30sec(void)
 	}
 	return true;
 }
-void image_and_capture::cutting_image(Mat image, Rect rec = Rect(535, 0, 114, 150))
+void image_and_capture::cutting_image(Mat image, Rect rec = Rect(535, 0, 104, 150))
 {
 	roi = image(rec);
 
@@ -130,19 +133,20 @@ double image_and_capture::percent(Mat image)
 	cvtColor(hsv, hsv, COLOR_BGR2HSV);
 
 	inRange(hsv, Scalar(13, 15, 40), Scalar(80 / 2, 230, 230), hsv);
-
+//	imshow("hsv",hsv);
+//	waitKey(0);
 	unsigned int count = 0;
 	for (int i = 0; i < hsv.rows; i++)
 	{
 		for (int j = 0; j < hsv.cols; j++)
 		{
-			if (hsv.at<uchar>(i, j) == 0)
+			if (hsv.at<uchar>(i, j) == 255)
 				count++;
 		}
 	}
 
 	double per;
-	per = (double)count / (double)image.rows / (double)image.cols * 100;
+	per = (double)count / (double)image.rows / (double)image.cols * 100 + 10;
 	cout << "사진의 %는 " << (double)per << endl;
 	return per;
 }
@@ -183,7 +187,7 @@ int image_and_capture::counting_circle(Mat image)
 
 	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 15, 30);
 	STOP = (this->circles).size();
-	waitKey(50);
+	usleep(1000 * 30); // 30ms;;
 	return (this->circles).size();
 }
 
@@ -198,10 +202,10 @@ void image_and_capture::video_capture(void)
 	{		
 		capture >> image;
 		cutting_image(image);
-		imshow("circle",image);
+	//	imshow("circle",image);
 		i = counting_circle(roi);
 		cout << "원의 개수는 : " << i << endl;
-		
+	//	waitKey(50);	
 	}
 	flash_off();
 
