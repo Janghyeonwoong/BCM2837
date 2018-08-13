@@ -82,7 +82,7 @@ int image_and_capture::capture_3min(void)
 		capture.open(0);
 		flash_off();
 		capture >> image;
-		imshow("image",image);
+	      //imshow("image",image);
 		capture.release();
 		per = percent(image);
 		if (per > seg_value * 10)
@@ -182,10 +182,10 @@ double image_and_capture::check_similarity(Mat source, Mat compare)
 
 int image_and_capture::counting_circle(Mat image)
 {
-	cvtColor(image, image, CV_BGR2GRAY);
+	cvtColor(image, gray, CV_BGR2GRAY);
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 
-	HoughCircles(image, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 15, 30);
+	HoughCircles(gray, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 15, 30);
 	STOP = (this->circles).size();
 	usleep(1000 * 30); // 30ms;;
 	return (this->circles).size();
