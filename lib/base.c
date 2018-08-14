@@ -43,7 +43,11 @@ void init_gpio(int fd)
     
     gpio = (volatile unsigned int *)gpio_memory_map;
 	 
- 
+ 	GPSEL* Sel0 = &gpio[GPFSEL0/4];
+	GPSEL* Sel1 = &gpio[GPFSEL1/4];
+	GPSEL* Sel2 = &gpio[GPFSEL2/4];
+	GPSEL* Sel3 = &gpio[GPFSEL3/4];
+
 }
 
 void init_pwm(int fd)
@@ -166,10 +170,6 @@ void clearbit(volatile unsigned int *x, int n)
 }
 void setup_switch(void)
 {
-	GPSEL* Sel0 = &gpio[GPFSEL0/4];
-	GPSEL* Sel1 = &gpio[GPFSEL1/4];
-	GPSEL* Sel2 = &gpio[GPFSEL2/4];
-
 	Sel0->sel5 = 1;
 	Sel2->sel5 = 0;
 	Sel2->sel7 = 0;
@@ -177,12 +177,68 @@ void setup_switch(void)
 }
 void flash_on(void)
 {
-	gpio[GPSET/4] = 1 << 5;
+	GPIO_ON(5);
 	sleep(1);
 }
 void flash_off(void)
 {
 	sleep(1);
-	gpio[GPCLR/4] = 1 << 5;
+	GPIO_OFF(5);
 
+}
+void GPIO_ON(int num)
+{
+	if( num > 31 || num < 0)
+	{
+		printf("you can't access that num \n");
+		exit(0);
+	}
+	setbit( &gpio[GPSET/4] , num);
+
+
+}
+void GPIO_OFF(int num)
+{
+	if( num > 31 || num < 0)
+	{
+		printf("you can't access that num \n");
+		exit(0);
+	}
+	setbit( &gpio[GPCLR/4] , num);
+
+
+}
+void GPIO_SET(int num, int setting)
+{
+	int tree  = num / 10;
+	int branch = num % 10;
+	switch(tree)
+	{
+		case 0 : *Sel0 &= ~(7 << (branch * 3) );
+				 *Sel0 |= (setting << (branch * 3));
+				 break;
+		case 1 : *Sel1 &= ~(7 << (branch * 3) );
+				 *Sel1 |= (setting << (branch * 3));
+				 break;
+		case 2 : *Sel2 &= ~(7 << (branch * 3) );
+				 *Sel2 |= (setting << (branch * 3));
+				 break;
+		case 3 : *Sel3 &= ~(7 << (branch * 3) );
+				 *Sel3 |= (setting << (branch * 3));
+				 break;
+		case 4 : *Sel4 &= ~(7 << (branch * 3) );
+				 *Sel4 |= (setting << (branch * 3));
+				 break;
+		default: printf("you input incorrect num\n");
+				 break;
+	}
+
+}
+int GPIO_STAT(int num)
+{
+	if( num < 0 || num > 31)
+	{
+		printf("you input incorrect num\n");
+	}
+	return getbit(&gpio[GPLEV/4] , num);
 }
