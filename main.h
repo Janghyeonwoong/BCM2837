@@ -41,6 +41,7 @@ class image_and_capture{
 		double check_similarity(Mat source, Mat compare); // find the value that similarity
 		int counting_circle(Mat image); // find circles at roi 
 		void video_capture(void);
+		void check_percent(void);
 };
 
 #endif

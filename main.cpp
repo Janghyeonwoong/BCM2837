@@ -208,5 +208,21 @@ void image_and_capture::video_capture(void)
 	//	waitKey(50);	
 	}
 	flash_off();
+	capture.release();
+}
+void image_and_capture::check_percent(void)
+{
+	capture.release();
+	capture.open(0);
+	while(STOP != 1)
+	{
+		capture >> image;
+		per = percent(image);
+		if(per < 10)
+		{
+			STOP = 1;
+		}
 
+	}
+		
 }
