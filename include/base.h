@@ -72,7 +72,7 @@ void GPIO_OFF(int num);
 void GPIO_SET(int num, int setting);
 int GPIO_STAT(int num);
 
-typedef struct GPSEL {
+typedef struct  {
     volatile unsigned int sel0:3;
     volatile unsigned int sel1:3;
     volatile unsigned int sel2:3;
@@ -86,6 +86,12 @@ typedef struct GPSEL {
     volatile unsigned int reserve:2;
 } GPSEL;
 
+typedef union {
+    GPSEL gpsel;
+    volatile unsigned int bits;
+
+}bit_union;
+
 extern volatile unsigned int * gpio;    
 extern volatile unsigned int * pwm;
 extern volatile unsigned int * clk;
@@ -95,8 +101,10 @@ extern int lock27;
 extern int seg_value;
 extern int STOP;
 
-static GPSEL* Sel0, Sel1, Sel2, Sel3;
-
+static bit_union * Sel0;
+static bit_union * Sel1;
+static bit_union * Sel2;
+static bit_union * Sel3;
 
 #ifdef __cplusplus
 }
