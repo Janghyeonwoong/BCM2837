@@ -11,6 +11,8 @@ void setup_pwm(void);
 
 void * pid_control(void * target);
 
+void * operate_motor(void * target);
+
 #ifdef __cplusplus
 }
 #endif 

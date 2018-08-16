@@ -222,7 +222,7 @@ void image_and_capture::check_percent(void)
 		{
 			STOP = 1;
 		}
-
+		usleep(1000* 30); // 30ms
 	}
 		
 }

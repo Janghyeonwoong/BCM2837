@@ -102,3 +102,39 @@ void * pid_control(void * target)
 	}
 }
 
+void * operate_motor(void * target)
+{
+	static int operate = 0;
+
+	while(1)
+	{
+		if(GPIO_STAT(17) && operate != 1)
+		{
+			change_pwm(pwm, 30);
+			operate = 1;
+		}
+		else if(!GPIO_STAT(17))
+		{
+			change_pwm(pwm, 0);
+			operate = 0;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
