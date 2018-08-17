@@ -62,20 +62,21 @@ void * pid_control(void * target)
 		Kd_term = Kd * (error - prev_error);
 		
 		current_value = Kp_term + Ki_term + Kd_term;
-		printf("current_value = %f\n",current_value);
+//		printf("current_value = %f\n",current_value);
 		prev_error = error;
 		change_pwm(pwm , current_value);
 		usleep(1000 * 97); // maybe 0.1 sec
-		if(++time >100) // 10초가넘어가면 알아서 정지;
+		if(++time >200) // 10초가넘어가면 알아서 정지;
 		{
 		    time = 0;
 		    STOP = 1;
-		    printf("there is no circle.. in 10sec \n ");
+		    printf("too much time ( > 10sec ) \n ");
 		    return NULL;
 
 		}
 		
 	}
+	time = 0;
 		return NULL;
 	}
 	else if(target_value == 0)
@@ -89,7 +90,7 @@ void * pid_control(void * target)
 		Kd_term = Kd * (error - prev_error);
 		
 		current_value = Kp_term + Ki_term + Kd_term;
-		printf("current_value = %f\n",current_value);
+//		printf("current_value = %f\n",current_value);
 
 		prev_error = error;
 		change_pwm(pwm , current_value);
@@ -101,40 +102,4 @@ void * pid_control(void * target)
 
 	}
 }
-
-void * operate_motor(void * target)
-{
-	static int operate = 0;
-
-	while(1)
-	{
-		if(GPIO_STAT(17) && operate != 1)
-		{
-			change_pwm(pwm, 30);
-			operate = 1;
-		}
-		else if(!GPIO_STAT(17))
-		{
-			change_pwm(pwm, 0);
-			operate = 0;
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -41,31 +41,32 @@ int main(void)
 	pthread_t tid[5];
 	int branch(0);
 	float target = 38;
-
+	change_pwm(pwm , 30);
+	sleep (1) ;
+	change_pwm(pwm , 0);
 	image_and_capture cap;
 	pthread_create(&tid[0], NULL, use_7seg, NULL);
 	pthread_create(&tid[1], NULL, check_falling_edge_up, (void *)&gpio25);
 	pthread_create(&tid[2], NULL, check_falling_edge_down, (void *)&gpio27);
 	while(1)
 	{
-	branch = cap.capture_3min();
-	switch(branch)
-	 {
-		case MOTOR :STOP = 0; 
-	 	 pthread_create(&tid[3], NULL, pid_control, (void *)&target);
+		branch = cap.capture_3min();
+		switch(branch)
+		{
+		 case MOTOR :STOP = 0;
+       	 	 pthread_create(&tid[3], NULL, pid_control, (void *)&target);
 	 	 target = 38; 
-		 cap.video_capture();
+		 cap.check_percent();
 		 pthread_join(tid[3], NULL);
 		 target = 0;
 		 pthread_create(&tid[4], NULL, pid_control, (void *)&target);
 		 pthread_join(tid[4], NULL);
-					 
-					 break;
-		default : break;
-
+		 STOP = 0;
+		 	break;
+		}
  
  	 }
-	}
+	
 
 	
 	return 0;
@@ -82,7 +83,8 @@ int image_and_capture::capture_3min(void)
 		capture.open(0);
 		flash_off();
 		capture >> image;
-	      //imshow("image",image);
+//		imshow("image",image);
+//		waitKey(0);
 		capture.release();
 		per = percent(image);
 		if (per > seg_value * 10)
@@ -90,7 +92,7 @@ int image_and_capture::capture_3min(void)
 			if (capture_30sec())
 				return MOTOR;
 		}
-		sleep(10);
+		sleep(5);
 		
 	}
 	return STOP;
@@ -102,7 +104,7 @@ bool image_and_capture::capture_30sec(void)
 	calc_histogram(image, 0);
 	for (int i = 0; i<3; i++)
 	{
-		sleep(5);
+		sleep(3);
 		capture.release();
 		flash_on();
 		capture.open(0);
@@ -112,7 +114,7 @@ bool image_and_capture::capture_30sec(void)
 		capture.release();
 		calc_histogram(images[i], i + 1);
 		similar = check_similarity(histograms[0], histograms[i + 1]);
-		if (similar < 85)
+		if (similar < 50)
 		{
 			cout << "similarity :" << similar << endl;
 			return false;
@@ -132,9 +134,9 @@ double image_and_capture::percent(Mat image)
 	GaussianBlur(image, hsv, Size(5,5), 0);
 	cvtColor(hsv, hsv, COLOR_BGR2HSV);
 
-	inRange(hsv, Scalar(13, 15, 40), Scalar(80 / 2, 230, 230), hsv);
-//	imshow("hsv",hsv);
-//	waitKey(0);
+	inRange(hsv, Scalar(13, 15, 20), Scalar(80 / 2, 230, 230), hsv);
+	imshow("hsv",hsv);
+	waitKey(30);
 	unsigned int count = 0;
 	for (int i = 0; i < hsv.rows; i++)
 	{
@@ -146,7 +148,7 @@ double image_and_capture::percent(Mat image)
 	}
 
 	double per;
-	per = (double)count / (double)image.rows / (double)image.cols * 100 + 10;
+	per = (double)count / (double)image.rows / (double)image.cols * 100 ;
 	cout << "사진의 %는 " << (double)per << endl;
 	return per;
 }
@@ -183,9 +185,10 @@ double image_and_capture::check_similarity(Mat source, Mat compare)
 int image_and_capture::counting_circle(Mat image)
 {
 	cvtColor(image, gray, CV_BGR2GRAY);
-	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
+	GaussianBlur(gray, gray, Size(5, 5), 2, 2);
 
 	HoughCircles(gray, this->circles, CV_HOUGH_GRADIENT, 1, 100, 100, 40, 15, 30);
+	
 	STOP = (this->circles).size();
 	usleep(1000 * 30); // 30ms;;
 	return (this->circles).size();
@@ -199,30 +202,30 @@ void image_and_capture::video_capture(void)
 	capture.release();
 	capture.open(0);
 	while (i == 0 && STOP < 1)
-	{		
+	{	 	
 		capture >> image;
 		cutting_image(image);
 	//	imshow("circle",image);
 		i = counting_circle(roi);
-		cout << "원의 개수는 : " << i << endl;
 	//	waitKey(50);	
 	}
 	flash_off();
-	capture.release();
+
 }
 void image_and_capture::check_percent(void)
 {
-	capture.release();
-	capture.open(0);
+	double per;
 	while(STOP != 1)
 	{
+		capture.release();
+		capture.open(0);
 		capture >> image;
 		per = percent(image);
+		cout << "percent is "<<per << endl;
 		if(per < 10)
 		{
 			STOP = 1;
 		}
-		usleep(1000* 30); // 30ms
 	}
 		
 }

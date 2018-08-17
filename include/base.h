@@ -31,16 +31,6 @@
 #define DAT1 0x14
 #define CLOCK_CNTL 0xA0
 #define CLOCK_DIV 0xA4
-
-#define IN 0
-#define OUT 1
-#define ALT0 4
-#define ALT1 5
-#define ALT2 6
-#define ALT3 7
-#define ALT4 3
-#define ALT5 2
-
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -67,12 +57,8 @@ void clearbit(volatile unsigned int * x, int n);
 void setup_switch(void);
 void flash_on(void);
 void flash_off(void);
-void GPIO_ON(int num);
-void GPIO_OFF(int num);
-void GPIO_SET(int num, int setting);
-int GPIO_STAT(int num);
 
-typedef struct  {
+typedef struct GPSEL {
     volatile unsigned int sel0:3;
     volatile unsigned int sel1:3;
     volatile unsigned int sel2:3;
@@ -86,25 +72,16 @@ typedef struct  {
     volatile unsigned int reserve:2;
 } GPSEL;
 
-typedef union {
-    GPSEL gpsel;
-    volatile unsigned int bits;
-
-}bit_union;
-
 extern volatile unsigned int * gpio;    
 extern volatile unsigned int * pwm;
 extern volatile unsigned int * clk;
+
+
 
 extern int lock17; // mutex lock??
 extern int lock27;
 extern int seg_value;
 extern int STOP;
-
-static bit_union * Sel0;
-static bit_union * Sel1;
-static bit_union * Sel2;
-static bit_union * Sel3;
 
 #ifdef __cplusplus
 }

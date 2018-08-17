@@ -5,6 +5,7 @@
 extern "C"{
 #endif
 
+
 void setup_7seg(void);
 /** setup GPIO 6, 12, 13, 16 ,19, 20, 26
   * for using 7segment
