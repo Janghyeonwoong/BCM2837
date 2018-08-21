@@ -77,16 +77,16 @@ void init_clk(int fd)
     }    
       
       
-    char *gpio_memory_map = (char *)mmap( 0, 4096, PROT_READ|PROT_WRITE,    
-        MAP_SHARED, fd, GPIO_BASE );    
+    char *clk_memory_map = (char *)mmap( 0, 4096, PROT_READ|PROT_WRITE,    
+        MAP_SHARED, fd, CLOCK_BASE );    
      
-    if ( gpio_memory_map == MAP_FAILED )    
+    if ( clk_memory_map == MAP_FAILED )    
     {    
         printf( " Error : gpio mmap \n" );    
         exit(-1);    
     }   
     
-    clk = (volatile unsigned int *)gpio_memory_map;
+    clk = (volatile unsigned int *)clk_memory_map;
 	 
  
 }
